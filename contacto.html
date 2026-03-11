@@ -440,38 +440,7 @@
   <!-- =============================================
        JS ESPECÍFICO DE CONTACTO
        ============================================= -->
-  <script>
-    /* --- Scroll fade-in para elementos .ct-fade-up --- */
-    const ctObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('ct-visible');
-          ctObserver.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.12 });
-
-    document.querySelectorAll('.ct-fade-up').forEach(el => ctObserver.observe(el));
-
-    /* --- Formulario: feedback visual al enviar --- */
-    const ctForm = document.getElementById('ctContactForm');
-    if (ctForm) {
-      ctForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-        const btn = ctForm.querySelector('.ct-btn-send');
-        const originalHTML = btn.innerHTML;
-        btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> ¡Mensaje enviado!';
-        btn.style.background = 'linear-gradient(135deg, #25D366, #128C7E)';
-        btn.disabled = true;
-        setTimeout(() => {
-          btn.innerHTML = originalHTML;
-          btn.style.background = '';
-          btn.disabled = false;
-          ctForm.reset();
-        }, 3500);
-      });
-    }
-  </script>
+  <script src="assets/js/script-contacto.js"></script>
 
 </body>
 </html>
