@@ -77,7 +77,10 @@ body {
   padding: 0;
   background: var(--blanco);
   overflow-x: hidden;
-  scroll-padding-top: 72px;
+  /* FIX: scroll-padding-top se actualiza dinámicamente desde JS
+     con la altura real del header (tira + navbar).
+     El valor 0 aquí es solo fallback; JS lo sobreescribe. */
+  scroll-padding-top: 0;
   font-family: var(--font-main);
   font-size: var(--typo-p-size);
   line-height: var(--typo-p-line);
@@ -150,9 +153,6 @@ main p {
    catálogo, acerca y contacto.
    ============================================ */
 
-/* H1 dentro de cualquier hero de página interior:
-   tamaño consistente, levemente más pequeño que el
-   hero del index (que tiene imagen de fondo). */
 .cat-hero__title,
 .ac-hero__title,
 .ct-hero-title {
@@ -160,10 +160,9 @@ main p {
   font-size: clamp(2.2rem, 5vw, 3.6rem);
   font-weight: 400;
   line-height: 1.12;
-  color: inherit; /* hereda del contexto (blanco en hero oscuro, negro en claro) */
+  color: inherit;
 }
 
-/* Subtítulo bajo el H1 de página interior */
 .cat-hero__sub,
 .ac-hero__sub,
 .ct-hero-sub {
@@ -175,7 +174,6 @@ main p {
   max-width: 520px;
 }
 
-/* Eyebrow/etiqueta antes del H1 de página interior */
 .cat-hero__eyebrow,
 .ct-hero-label {
   font-family: var(--font-main);
@@ -188,6 +186,9 @@ main p {
 
 /* ============================================
    TIRA DE NOVEDAD
+   FIX: ahora vive DENTRO del .v2-header (sticky).
+   margin:0, line-height:1 y display:block eliminan
+   cualquier gap residual entre la tira y el navbar.
    ============================================ */
 .v2-novedad-strip {
   background: linear-gradient(90deg, var(--rosa-deep) 0%, #ff1493 100%);
@@ -198,6 +199,11 @@ main p {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   padding: 0.5rem 0;
+  /* FIX: eliminar cualquier margen o gap residual */
+  margin: 0;
+  line-height: 1;
+  display: block;
+  width: 100%;
 }
 
 .v2-novedad-strip a {
@@ -209,10 +215,17 @@ main p {
 /* ============================================
    NAVBAR
    ============================================ */
+
+/* FIX: el header es el bloque sticky unificado
+   que contiene la tira de novedad + el navbar.
+   Al ser un solo elemento sticky, no puede haber
+   gap entre sus hijos al cambiar el viewport. */
 .v2-header {
   position: sticky;
   top: 0;
   z-index: 1050;
+  /* Sin background aquí: cada hijo gestiona el suyo */
+  background: transparent;
 }
 
 .v2-navbar {
@@ -279,24 +292,22 @@ main p {
 
 @media (max-width: 991px) {
   /* ── NAVBAR MOBILE: bloque visual unificado ──
-     El navbar y el collapse comparten el mismo gradiente
-     y se tratan como una sola pieza visual continua.
-     Sin bordes, sin sombras intermedias que creen la "raya". */
+     El header completo (tira + navbar + collapse)
+     se trata como una sola pieza visual continua. */
 
-  /* 1. El header completo se convierte en el contenedor del bloque */
+  /* 1. El header completo tiene el gradiente */
   .v2-header {
     background: linear-gradient(160deg, #FFADD5 0%, #f090be 50%, #e0709f 100%);
   }
 
-  /* 2. El navbar es transparente dentro del header — hereda el fondo */
+  /* 2. El navbar es transparente dentro del header */
   .v2-navbar {
     background: transparent !important;
     box-shadow: none !important;
     padding-bottom: 0;
   }
 
-  /* 3. El collapse abierto también es transparente,
-        sin bordes ni sombras que corten el bloque */
+  /* 3. El collapse abierto también transparente */
   .v2-navbar .navbar-collapse.show,
   .v2-navbar .navbar-collapse.collapsing {
     background: transparent !important;
@@ -306,7 +317,7 @@ main p {
     padding: 0.5rem 1rem 1.2rem;
   }
 
-  /* 4. Sombra suave solo en la parte inferior del header completo
+  /* 4. Sombra suave solo en la parte inferior del header
         cuando el menú está abierto */
   .v2-header:has(.navbar-collapse.show) {
     box-shadow: 0 8px 28px rgba(192,66,122,0.28);
