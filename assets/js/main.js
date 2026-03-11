@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // ============================================
   // HAMBURGUESA — animación X
   // ============================================
-  const v2HamBtn = document.getElementById('v2HamburgerBtn');
+  const v2HamBtn     = document.getElementById('v2HamburgerBtn');
   const bsCollapseEl = document.getElementById('v2NavMenu');
 
   if (v2HamBtn && bsCollapseEl) {
@@ -40,16 +40,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // ============================================
   // CERRAR MENÚ MOBILE al hacer clic en nav-link
-  // Aplica a links normales Y a anchors (#seccion)
   // ============================================
   if (bsCollapseEl) {
-    const bsCollapse = bootstrap.Collapse.getOrCreateInstance(bsCollapseEl, { toggle: false });
-
     document.querySelectorAll('.v2-navbar .nav-link').forEach(function (link) {
       link.addEventListener('click', function () {
-        if (bsCollapseEl.classList.contains('show')) {
-          bsCollapse.hide();
+        if (!bsCollapseEl.classList.contains('show')) return;
+
+        if (typeof bootstrap !== 'undefined' && bootstrap.Collapse) {
+          try {
+            bootstrap.Collapse.getOrCreateInstance(bsCollapseEl).hide();
+            return;
+          } catch (e) { /* fallback abajo */ }
         }
+
+        if (v2HamBtn) v2HamBtn.click();
       });
     });
   }
@@ -72,15 +76,50 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // ============================================
   // HERO — ajuste de margin para navbar sticky
+  //
+  // FIX PROBLEMA 1: ahora mide el .v2-header
+  // COMPLETO (tira de novedad + navbar), ya que
+  // la tira está dentro del header en el HTML.
+  //
+  // FIX PROBLEMA 2: ResizeObserver recalcula en
+  // tiempo real cuando el viewport cambia (p.ej.
+  // al cerrar DevTools mobile), evitando que el
+  // scroll quede mal posicionado.
+  //
+  // También actualiza scroll-padding-top en el
+  // elemento <html> dinámicamente, reemplazando
+  // el valor fijo de 72px del CSS.
   // ============================================
   (function adjustHero() {
-    const nav  = v2Header;
+    const nav  = v2Header; // <header> completo: tira + navbar
     const hero = v2Hero;
     if (!nav || !hero) return;
-    const h = nav.getBoundingClientRect().height;
-    hero.style.marginTop  = `-${h}px`;
-    hero.style.paddingTop = `${h}px`;
-    hero.style.minHeight  = `calc(100svh + ${h}px)`;
+
+    function applyHeroOffset() {
+      // Forzar reflow para obtener la altura real del header
+      // incluyendo la tira de novedad que ahora vive dentro
+      const h = nav.getBoundingClientRect().height;
+
+      hero.style.marginTop  = `-${h}px`;
+      hero.style.paddingTop = `${h}px`;
+      hero.style.minHeight  = `calc(100svh + ${h}px)`;
+
+      // FIX: actualizar scroll-padding-top dinámicamente
+      // para que los anclas (#seccion) descuenten la altura
+      // correcta al cambiar entre mobile y desktop
+      document.documentElement.style.scrollPaddingTop = `${h}px`;
+    }
+
+    applyHeroOffset();
+
+    // FIX: ResizeObserver detecta cambios de tamaño del header
+    // (incluyendo el cierre de DevTools) y recalcula sin recargar
+    if (window.ResizeObserver) {
+      const ro = new ResizeObserver(function () {
+        applyHeroOffset();
+      });
+      ro.observe(nav);
+    }
   })();
 
   // ============================================
@@ -98,6 +137,34 @@ document.addEventListener('DOMContentLoaded', function () {
         icon.classList.replace('fa-solid', 'fa-regular');
         this.style.color = '';
       }
+    });
+  });
+
+  // ============================================
+  // ANCHOR SCROLL — compensar navbar sticky
+  //
+  // FIX PROBLEMA 2: se reemplaza el scroll manual
+  // con window.scrollTo() + cálculo de offsetTop
+  // por scrollIntoView() nativo, que respeta
+  // automáticamente el scroll-padding-top del <html>
+  // (actualizado dinámicamente en adjustHero).
+  //
+  // Esto elimina el bug donde al volver de vista
+  // mobile el scroll quedaba posicionado en el footer.
+  // ============================================
+  document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
+    anchor.addEventListener('click', function (e) {
+      const targetId = this.getAttribute('href').slice(1);
+      if (!targetId) return; // href="#" solo, no hacer nada
+
+      const target = document.getElementById(targetId);
+      if (!target) return;
+
+      e.preventDefault();
+
+      // scrollIntoView usa scroll-padding-top del <html>
+      // que ya fue actualizado con la altura real del header
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   });
 
