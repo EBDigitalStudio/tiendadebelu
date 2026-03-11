@@ -23,17 +23,20 @@
 <body>
 
   <!-- =============================================
-       TIRA DE NOVEDAD
-       ============================================= -->
-  <div class="v2-novedad-strip">
-    🌸 ¡Nuevos artículos esta semana!
-    <a href="catalogo.html">Ver novedades →</a>
-  </div>
-
-  <!-- =============================================
        HEADER / NAVBAR
+       FIX: la tira de novedad ahora está DENTRO
+       del header para que sea sticky junto con el
+       navbar y no genere línea blanca al cambiar
+       de viewport en DevTools.
        ============================================= -->
   <header class="v2-header">
+
+    <!-- TIRA DE NOVEDAD (movida aquí dentro del header) -->
+    <div class="v2-novedad-strip">
+      🌸 ¡Nuevos artículos esta semana!
+      <a href="catalogo.html">Ver novedades →</a>
+    </div>
+
     <nav class="navbar navbar-expand-lg v2-navbar">
       <div class="container">
 
@@ -61,6 +64,7 @@
         </div>
       </div>
     </nav>
+
   </header>
 
   <main>
@@ -194,7 +198,7 @@
       </div>
     </section>
 
-<!-- =============================================
+    <!-- =============================================
          PRODUCTOS DESTACADOS
          ============================================= -->
     <section class="v2-productos">
