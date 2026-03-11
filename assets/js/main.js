@@ -31,12 +31,27 @@ document.addEventListener('DOMContentLoaded', function () {
   // HAMBURGUESA — animación X
   // ============================================
   const v2HamBtn = document.getElementById('v2HamburgerBtn');
-  if (v2HamBtn) {
-    const bsCollapse = document.getElementById('v2NavMenu');
-    if (bsCollapse) {
-      bsCollapse.addEventListener('show.bs.collapse', () => v2HamBtn.classList.add('is-active'));
-      bsCollapse.addEventListener('hide.bs.collapse', () => v2HamBtn.classList.remove('is-active'));
-    }
+  const bsCollapseEl = document.getElementById('v2NavMenu');
+
+  if (v2HamBtn && bsCollapseEl) {
+    bsCollapseEl.addEventListener('show.bs.collapse', () => v2HamBtn.classList.add('is-active'));
+    bsCollapseEl.addEventListener('hide.bs.collapse', () => v2HamBtn.classList.remove('is-active'));
+  }
+
+  // ============================================
+  // CERRAR MENÚ MOBILE al hacer clic en nav-link
+  // Aplica a links normales Y a anchors (#seccion)
+  // ============================================
+  if (bsCollapseEl) {
+    const bsCollapse = bootstrap.Collapse.getOrCreateInstance(bsCollapseEl, { toggle: false });
+
+    document.querySelectorAll('.v2-navbar .nav-link').forEach(function (link) {
+      link.addEventListener('click', function () {
+        if (bsCollapseEl.classList.contains('show')) {
+          bsCollapse.hide();
+        }
+      });
+    });
   }
 
   // ============================================
@@ -88,19 +103,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // ============================================
   // SCROLL SPY — solo en el index (cuando hay hero)
-  //
-  // Detecta qué sección está en pantalla y activa
-  // el nav-link correspondiente con la sombra blanca.
-  // "Inicio" activo = arriba en el hero.
-  // "¿Qué Ofrecemos?" activo = al llegar a #v2-ofrecemos.
   // ============================================
   if (v2Hero) {
 
     const navLinks = document.querySelectorAll('.v2-navbar .nav-link');
 
-    // Secciones con scroll spy: [id, href del nav-link]
     const spySections = [
-      { id: 'v2-ofrecemos' , href: '#v2-ofrecemos'   }
+      { id: 'v2-ofrecemos', href: '#v2-ofrecemos' }
     ];
 
     function clearActive() {
@@ -116,33 +125,28 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function runScrollSpy() {
-      const navH   = v2Header ? v2Header.getBoundingClientRect().height : 0;
+      const navH    = v2Header ? v2Header.getBoundingClientRect().height : 0;
       const scrollY = window.scrollY;
-      const offset  = navH + 80; // margen de activación
+      const offset  = navH + 80;
       let   active  = null;
 
-      // Recorrer secciones de abajo hacia arriba
-      // para que la última que supere el offset gane
       spySections.forEach(function (item) {
         const el = document.getElementById(item.id);
         if (!el) return;
         const top = el.getBoundingClientRect().top + scrollY - offset;
-        if (scrollY >= top) {
-          active = item.href;
-        }
+        if (scrollY >= top) active = item.href;
       });
 
       clearActive();
-
       if (active) {
-        setActive(active);          // sección interna activa
+        setActive(active);
       } else {
-        setActive('index.html');    // arriba → Inicio activo
+        setActive('index.html');
       }
     }
 
     window.addEventListener('scroll', runScrollSpy, { passive: true });
-    runScrollSpy(); // ejecutar al cargar
+    runScrollSpy();
   }
 
 });
