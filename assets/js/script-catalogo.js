@@ -14,7 +14,7 @@
   const CONFIG = Object.freeze({
     WA_NUMBER:     "595992863948",
     ITEMS_PER_PAGE: 8,
-    SCROLL_TARGET: ".cat-controls", // a dónde sube al cambiar página
+    SCROLL_TARGET: ".cat-controls",
   });
 
   /* ─────────────────────────────────────────
@@ -27,7 +27,7 @@
   };
 
   /* ─────────────────────────────────────────
-     REFERENCIAS AL DOM (se resuelven una sola vez)
+     REFERENCIAS AL DOM
   ───────────────────────────────────────────*/
   const dom = {
     grid:         () => document.getElementById("catProductGrid"),
@@ -46,11 +46,6 @@
   /* ─────────────────────────────────────────
      HELPERS
   ───────────────────────────────────────────*/
-
-  /**
-   * Normaliza texto: minúsculas + sin tildes
-   * Hace la búsqueda más tolerante
-   */
   function normalize(str) {
     return str
       .toLowerCase()
@@ -58,23 +53,17 @@
       .replace(/[\u0300-\u036f]/g, "");
   }
 
-  /**
-   * Lee el precio desde el atributo data-price del col,
-   * nunca del texto visible del DOM.
-   * Así el usuario no puede modificarlo desde "Inspeccionar".
-   */
   function safeReadProduct(col) {
     return {
       name:     col.dataset.name     || "",
       category: col.dataset.category || "",
-      price:    col.dataset.price    || "",   // <-- del atributo, no del DOM visible
+      price:    col.dataset.price    || "",
       img:      col.dataset.img      || "",
     };
   }
 
   /* ─────────────────────────────────────────
-     FILTRADO — devuelve los cols que pasan
-     los filtros activos de categoría + búsqueda
+     FILTRADO
   ───────────────────────────────────────────*/
   function getFilteredCols() {
     const cols  = Array.from(dom.cols());
@@ -83,53 +72,36 @@
 
     return cols.filter(col => {
       const data = safeReadProduct(col);
-
-      // Filtro por categoría
-      const matchCat =
-        cat === "todos" || data.category === cat;
-
-      // Filtro por búsqueda
-      const matchSearch =
-        query === "" || normalize(data.name).includes(query);
-
+      const matchCat    = cat === "todos" || data.category === cat;
+      const matchSearch = query === "" || normalize(data.name).includes(query);
       return matchCat && matchSearch;
     });
   }
 
   /* ─────────────────────────────────────────
-     RENDER — muestra u oculta cards según
-     filtros + página actual
+     RENDER
   ───────────────────────────────────────────*/
   function render() {
-    const filtered = getFilteredCols();
-    const all      = Array.from(dom.cols());
-    const total    = filtered.length;
-
+    const filtered   = getFilteredCols();
+    const all        = Array.from(dom.cols());
+    const total      = filtered.length;
     const { ITEMS_PER_PAGE } = CONFIG;
     const totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
 
-    // Asegurar que la página actual sea válida
     if (state.currentPage > totalPages) state.currentPage = totalPages;
 
     const start = (state.currentPage - 1) * ITEMS_PER_PAGE;
     const end   = start + ITEMS_PER_PAGE;
-
-    // Crear Set de cols visibles para O(1) lookup
     const visibleSet = new Set(filtered.slice(start, end));
 
-    // Mostrar / ocultar cada col
     all.forEach(col => {
       col.style.display = visibleSet.has(col) ? "" : "none";
     });
 
-    // Estado vacío
     const empty = dom.emptyState();
     if (empty) empty.style.display = total === 0 ? "flex" : "none";
 
-    // Contador de resultados
     updateResultsCount(total);
-
-    // Paginación
     renderPagination(total, totalPages);
   }
 
@@ -150,23 +122,20 @@
   }
 
   /* ─────────────────────────────────────────
-     PAGINACIÓN — genera botones dinámicamente
+     PAGINACIÓN
   ───────────────────────────────────────────*/
   function renderPagination(total, totalPages) {
-    const numbersEl  = dom.pageNumbers();
-    const prevBtn    = dom.pagePrev();
-    const nextBtn    = dom.pageNext();
-    const paginEl    = dom.pagination();
+    const numbersEl = dom.pageNumbers();
+    const prevBtn   = dom.pagePrev();
+    const nextBtn   = dom.pageNext();
+    const paginEl   = dom.pagination();
 
     if (!numbersEl || !prevBtn || !nextBtn) return;
 
-    // Ocultar paginación si hay 1 sola página
     if (paginEl) paginEl.style.display = totalPages <= 1 ? "none" : "flex";
 
-    // Limpiar números anteriores
     numbersEl.innerHTML = "";
 
-    // Generar botones de página con lógica de puntos suspensivos
     const pages = getPaginationRange(state.currentPage, totalPages);
 
     pages.forEach(p => {
@@ -186,15 +155,10 @@
       numbersEl.appendChild(btn);
     });
 
-    // Estado de botones anterior / siguiente
     prevBtn.disabled = state.currentPage <= 1;
     nextBtn.disabled = state.currentPage >= totalPages;
   }
 
-  /**
-   * Genera el rango de páginas con puntos suspensivos
-   * Ej: [1, 2, "...", 8, 9] para currentPage=2, total=9
-   */
   function getPaginationRange(current, total) {
     if (total <= 5) {
       return Array.from({ length: total }, (_, i) => i + 1);
@@ -232,14 +196,11 @@
   }
 
   /* ─────────────────────────────────────────
-     WHATSAPP — mensaje seguro desde data attrs
-     El precio se lee desde data-price del col,
-     nunca del texto visible del HTML.
+     WHATSAPP
   ───────────────────────────────────────────*/
   function buildWAMessage(col) {
     const { name, price, img } = safeReadProduct(col);
 
-    // Construir URL absoluta de la imagen si es relativa
     const imgUrl = img
       ? new URL(img, window.location.href).href
       : "";
@@ -265,14 +226,76 @@
   }
 
   /* ─────────────────────────────────────────
+     MINI CARRUSEL
+  ───────────────────────────────────────────*/
+  function initCarousels() {
+    document.querySelectorAll(".cat-card__carousel").forEach(function (wrap) {
+
+      const slides = wrap.querySelectorAll(".cat-card__slide");
+      const dots   = wrap.querySelectorAll(".cat-carousel__dot");
+      const prev   = wrap.querySelector(".cat-carousel__btn--prev");
+      const next   = wrap.querySelector(".cat-carousel__btn--next");
+
+      if (slides.length <= 1) return;
+
+      let current = 0;
+
+      function goTo(index) {
+        slides[current].classList.remove("active");
+        if (dots[current]) dots[current].classList.remove("active");
+
+        current = (index + slides.length) % slides.length;
+
+        slides[current].classList.add("active");
+        if (dots[current]) dots[current].classList.add("active");
+      }
+
+      if (prev) {
+        prev.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          goTo(current - 1);
+        });
+      }
+
+      if (next) {
+        next.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          goTo(current + 1);
+        });
+      }
+
+      dots.forEach(function (dot, i) {
+        dot.addEventListener("click", function (e) {
+          e.stopPropagation();
+          goTo(i);
+        });
+      });
+
+      // Swipe táctil
+      let touchStartX = 0;
+
+      wrap.addEventListener("touchstart", function (e) {
+        touchStartX = e.touches[0].clientX;
+      }, { passive: true });
+
+      wrap.addEventListener("touchend", function (e) {
+        const diff = touchStartX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 30) {
+          goTo(diff > 0 ? current + 1 : current - 1);
+        }
+      }, { passive: true });
+
+    });
+  }
+
+  /* ─────────────────────────────────────────
      INICIALIZACIÓN DE EVENTOS
   ───────────────────────────────────────────*/
-
-  /** Filtros de categoría */
   function initFilters() {
     dom.filterBtns().forEach(btn => {
       btn.addEventListener("click", () => {
-        // Desactivar todos, activar el clickeado
         dom.filterBtns().forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
 
@@ -283,7 +306,6 @@
     });
   }
 
-  /** Buscador */
   function initSearch() {
     const input    = dom.searchInput();
     const clearBtn = dom.searchClear();
@@ -294,7 +316,6 @@
       state.searchQuery = input.value;
       state.currentPage = 1;
 
-      // Mostrar / ocultar botón de limpiar
       if (clearBtn) {
         clearBtn.style.display = input.value.length > 0 ? "flex" : "none";
       }
@@ -314,7 +335,6 @@
     }
   }
 
-  /** Paginación — botones anterior / siguiente */
   function initPaginationButtons() {
     const prevBtn = dom.pagePrev();
     const nextBtn = dom.pageNext();
@@ -334,9 +354,7 @@
     }
   }
 
-  /** Botones WhatsApp en las cards */
   function initWAButtons() {
-    // Delegación de eventos en el grid completo (más eficiente)
     const grid = dom.grid();
     if (!grid) return;
 
@@ -359,10 +377,10 @@
     initSearch();
     initPaginationButtons();
     initWAButtons();
-    render(); // render inicial
+    initCarousels(); // ← carrusel dentro del IIFE
+    render();
   }
 
-  // Esperar a que el DOM esté listo
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {
