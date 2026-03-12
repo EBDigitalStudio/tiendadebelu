@@ -199,11 +199,14 @@ main p {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   padding: 0.5rem 0;
-  /* FIX: eliminar cualquier margen o gap residual */
   margin: 0;
   line-height: 1;
   display: block;
   width: 100%;
+  border: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 .v2-novedad-strip a {
@@ -224,13 +227,16 @@ main p {
   position: sticky;
   top: 0;
   z-index: 1050;
-  /* Sin background aquí: cada hijo gestiona el suyo */
   background: transparent;
+  /* Transición solo para el scroll (se sobreescribe en mobile) */
+  transition: background 0.35s cubic-bezier(.4,0,.2,1);
 }
 
 .v2-navbar {
   background: transparent !important;
   padding: 0.6rem 0;
+  border: none !important;
+  border-bottom: none !important;
   transition: background var(--transition), box-shadow var(--transition);
 }
 
@@ -291,36 +297,65 @@ main p {
 .v2-navbar .navbar-toggler.is-active .v2-hamburger-line:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
 @media (max-width: 991px) {
-  /* ── NAVBAR MOBILE: bloque visual unificado ──
-     El header completo (tira + navbar + collapse)
-     se trata como una sola pieza visual continua. */
+  /* ── NAVBAR MOBILE ──
+     - Header transparente sobre el hero al inicio
+     - Se vuelve rosado al hacer scroll O al abrir el menú
+     - Línea blanca eliminada: borde/outline de Bootstrap anulado */
 
-  /* 1. El header completo tiene el gradiente */
+  /* 1. Header transparente por defecto, sin transición en mobile
+        para que el menú aparezca instantáneo al abrirse */
   .v2-header {
-    background: linear-gradient(160deg, #FFADD5 0%, #f090be 50%, #e0709f 100%);
+    background: transparent;
+    transition: none !important;
+    border: none !important;
+    outline: none !important;
   }
 
-  /* 2. El navbar es transparente dentro del header */
-  .v2-navbar {
+  /* 2. Rosado al hacer scroll (con transición suave) */
+  .v2-header.scrolled {
+    background: linear-gradient(160deg, #FFADD5 0%, #f090be 50%, #e0709f 100%);
+    box-shadow: 0 2px 20px rgba(224,112,159,0.4);
+    transition: background 0.3s ease !important;
+  }
+
+  /* 3. Rosado instantáneo cuando el menú está abierto */
+  .v2-header:has(.navbar-collapse.show) {
+    background: linear-gradient(160deg, #FFADD5 0%, #f090be 50%, #e0709f 100%);
+    box-shadow: 0 8px 28px rgba(192,66,122,0.28);
+    transition: none !important;
+  }
+
+  /* 4. Navbar y todos sus hijos sin fondo ni borde —
+        Bootstrap inyecta fondo blanco y border-bottom
+        en el .navbar y su .container en mobile */
+  .v2-navbar,
+  .v2-navbar > *,
+  .v2-navbar .container,
+  .v2-navbar .container-fluid {
     background: transparent !important;
     box-shadow: none !important;
+    border: none !important;
+    outline: none !important;
+  }
+  .v2-navbar {
     padding-bottom: 0;
+    border-bottom: none !important;
   }
 
-  /* 3. El collapse abierto también transparente */
-  .v2-navbar .navbar-collapse.show,
-  .v2-navbar .navbar-collapse.collapsing {
+  /* 5. Collapse siempre transparente — el header ya tiene el rosado.
+        El flash blanco se elimina desactivando la animación de
+        Bootstrap en mobile (transition: none en el collapse). */
+  .v2-navbar .navbar-collapse,
+  .v2-navbar .navbar-collapse.collapsing,
+  .v2-navbar .navbar-collapse.show {
     background: transparent !important;
     border-radius: 0;
-    box-shadow: none;
+    box-shadow: none !important;
+    border: none !important;
     margin: 0;
     padding: 0.5rem 1rem 1.2rem;
-  }
-
-  /* 4. Sombra suave solo en la parte inferior del header
-        cuando el menú está abierto */
-  .v2-header:has(.navbar-collapse.show) {
-    box-shadow: 0 8px 28px rgba(192,66,122,0.28);
+    /* Elimina la animación de altura de Bootstrap que causa el flash */
+    transition: none !important;
   }
 
   .v2-navbar .navbar-nav { align-items: center; }
