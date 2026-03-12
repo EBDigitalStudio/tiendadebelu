@@ -185,14 +185,30 @@
 }
 
 @media (max-width: 768px) {
-  /* Centrar verticalmente en lugar de pegarlo al fondo */
+  /* ── MOBILE HERO ──
+     1. Imagen vertical exclusiva para mobile
+     2. Hero sube detrás del navbar transparente
+     3. Contenido con padding superior para no quedar
+        tapado por la tira de novedad + navbar */
+
   .v2-hero {
-    align-items: center;
+    background-image: url('../img/imagenlocal2.jpeg');
     background-position: center center;
+    /* Valor generoso para cubrir cualquier altura de header
+       y eliminar la barra blanca del body */
+    margin-top: -200px !important;
+    padding-top: 0 !important;
+    min-height: calc(100svh + 200px) !important;
+    align-items: center;
+    border-top: none !important;
+    outline: none !important;
   }
 
+  /* El contenido tiene padding-top generoso para quedar
+     debajo del navbar transparente (~90px) con margen extra */
   .v2-hero-content {
-    padding: 1.5rem 0 2rem;
+    padding-top: 9rem !important;
+    padding-bottom: 3rem;
   }
 
   .v2-hero-eyebrow {
@@ -216,11 +232,12 @@
     padding: 0.72rem 1.5rem;
   }
 
-  /* Stats: menos espacio vertical */
+  /* Stats: menos espacio vertical, sin borde blanco */
   .v2-hero-stats {
     gap: 1.5rem;
     margin-top: 1.6rem;
     padding-top: 1.2rem;
+    border-top: none;
   }
 
   .v2-hero-stat-num { font-size: 1.4rem; }
@@ -228,6 +245,7 @@
   /* Ocultar scroll hint en mobile */
   .v2-scroll-hint { display: none; }
 }
+
 
 /* ============================================
    SECCIÓN CATEGORÍAS
