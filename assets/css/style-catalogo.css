@@ -564,3 +564,97 @@
   font-weight: 600;
   letter-spacing: 0.04em;
 }
+
+
+/* ============================================
+   MINI CARRUSEL en tarjeta de producto
+   Agregar al final de style-catalogo.css
+   ============================================ */
+
+/* Las imágenes del carrusel se apilan dentro del mismo wrap */
+.cat-card__carousel {
+  position: relative;   /* ya lo tenía, pero lo reforzamos */
+}
+
+/* Todas las slides ocultas por defecto */
+.cat-card__slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+/* Solo la slide activa es visible */
+.cat-card__slide.active {
+  opacity: 1;
+  position: relative;   /* ocupa espacio para mantener el aspect-ratio del wrap */
+  pointer-events: auto;
+}
+
+/* ── Flechas de navegación ── */
+.cat-carousel__btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.82);
+  border: none;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--rosa-deep);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  transition: background 0.2s ease, transform 0.2s ease;
+  z-index: 3;
+  padding: 0;
+}
+
+.cat-carousel__btn:hover {
+  background: rgba(255, 255, 255, 0.97);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.cat-carousel__btn--prev { left:  0.4rem; }
+.cat-carousel__btn--next { right: 0.4rem; }
+
+/* ── Puntitos indicadores ── */
+.cat-carousel__dots {
+  position: absolute;
+  bottom: 0.45rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.3rem;
+  z-index: 3;
+}
+
+.cat-carousel__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  transition: background 0.25s ease, transform 0.25s ease;
+  cursor: pointer;
+}
+
+.cat-carousel__dot.active {
+  background: #fff;
+  transform: scale(1.25);
+}
+
+/* ── Responsive: flechas más chicas en móvil ── */
+@media (max-width: 767px) {
+  .cat-carousel__btn {
+    width: 22px;
+    height: 22px;
+    font-size: 0.95rem;
+  }
+}
