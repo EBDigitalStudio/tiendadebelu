@@ -18,9 +18,16 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!v2Navbar) return;
     if (v2Hero) {
       const heroBottom = v2Hero.getBoundingClientRect().bottom;
-      v2Navbar.classList.toggle('scrolled', heroBottom < 80);
+      const isScrolled = heroBottom < 80;
+      v2Navbar.classList.toggle('scrolled', isScrolled);
+      // FIX MOBILE: aplica .scrolled también al header completo
+      // para activar el fondo rosado en mobile al hacer scroll
+      if (v2Header) v2Header.classList.toggle('scrolled', isScrolled);
     } else {
+      // En páginas sin hero (catálogo, acerca, contacto)
+      // el header siempre tiene el fondo rosado desde el inicio
       v2Navbar.classList.add('scrolled');
+      if (v2Header) v2Header.classList.add('scrolled');
     }
   }
 
@@ -89,6 +96,11 @@ document.addEventListener('DOMContentLoaded', function () {
   // También actualiza scroll-padding-top en el
   // elemento <html> dinámicamente, reemplazando
   // el valor fijo de 72px del CSS.
+  //
+  // NOTA MOBILE: en mobile el CSS del index anula
+  // margin-top/padding-top/min-height con !important
+  // para que el hero arranque desde el borde superior
+  // y el navbar transparente quede encima de la imagen.
   // ============================================
   (function adjustHero() {
     const nav  = v2Header; // <header> completo: tira + navbar
@@ -96,18 +108,25 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!nav || !hero) return;
 
     function applyHeroOffset() {
-      // Forzar reflow para obtener la altura real del header
-      // incluyendo la tira de novedad que ahora vive dentro
       const h = nav.getBoundingClientRect().height;
 
-      hero.style.marginTop  = `-${h}px`;
-      hero.style.paddingTop = `${h}px`;
-      hero.style.minHeight  = `calc(100svh + ${h}px)`;
-
-      // FIX: actualizar scroll-padding-top dinámicamente
-      // para que los anclas (#seccion) descuenten la altura
-      // correcta al cambiar entre mobile y desktop
-      document.documentElement.style.scrollPaddingTop = `${h}px`;
+      // En mobile (<=768px) el CSS del index maneja el hero con
+      // margin-top negativo fijo. JS limpia sus estilos inline
+      // para no interferir con los !important del media query.
+      if (window.innerWidth <= 768) {
+        hero.style.marginTop  = '';
+        hero.style.paddingTop = '';
+        hero.style.minHeight  = '';
+      } else {
+        hero.style.marginTop  = `-${h}px`;
+        hero.style.paddingTop = `${h}px`;
+        hero.style.minHeight  = `calc(100svh + ${h}px)`;
+      }
+      // scroll-padding-top siempre se actualiza en todos los viewports.
+      // En mobile se resta un offset extra de 20px para que la sección
+      // quede un poco más abajo y no quede pegada al navbar.
+      const scrollOffset = window.innerWidth <= 768 ? h - 200 : h;
+      document.documentElement.style.scrollPaddingTop = `${scrollOffset}px`;
     }
 
     applyHeroOffset();
