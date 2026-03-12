@@ -554,3 +554,13 @@
     background: linear-gradient(135deg, #FFADD5 0%, #f090be 55%, #e0709f 100%) !important;
   }
 }*/
+
+/* Talle del producto (categoría Ropa) */
+.cat-card__size {
+  font-size: 0.82rem;
+  color: #b06090;
+  font-family: var(--font-main);
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
